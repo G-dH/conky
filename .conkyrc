@@ -1,0 +1,163 @@
+conky.config = {
+	--# Conky
+	--########
+	update_interval=1,
+	format_human_readable=yes,
+	text_buffer_size=16384,
+	default_graph_width=150,
+	default_graph_height=8,
+
+	--# Window
+	--#########
+	own_window=true,
+	own_window_type="normal",
+	own_window_transparent=true,
+	own_window_argb_visual=true,
+	--own_window_argb_value=50,
+	own_window_hints="sticky,undecorated,below,skip_taskbar,skip_pager",
+	--own_window_title="Conky- System monitor",
+	own_window_colour="#000",
+
+	--# Graphics
+	--###########
+	double_buffer=true,
+	draw_borders=false,
+
+	--# Layout
+	--#########
+	gap_x=25,
+	gap_y=-250,
+	maximum_width=310,
+	alignment="middle_right",
+	--minimum_width=310,
+	--minimum_height=1024,
+	--border_outer_margin=10,
+
+	--# Text
+	--#######
+	draw_outline=false,
+	draw_shades=true,
+	use_xft=true,
+	xftalpha=1,
+	default_color="fff",
+	color1="#a22",
+	color2="#fa0",
+	color3="#555",
+	color4="#f00",
+	color5="#888",
+	color6="#ddd",
+	font="sans:size=8"
+};
+conky.text = [[
+########
+# Time #
+########
+
+${color1}${font sanse:bold:size=10}${execpi 10000 ~/.conky/get_DE}$color2$alignr${time %k:%M} ${time %d.%m.%y}$font
+${voffset -6}$color3$hr$color
+${color}${font sanse:bold:size=8}${execi 10000 lsb_release -sd} ${execi 10000 lsb_release -sc}$font${goto 235}${color}Updates:$font$alignr${texeci 3600 aptitude search "~U" | wc -l} 
+##########
+# System #
+##########
+${voffset 5}${color1}${font sanse:bold:size=10}System$font${alignr}$color$sysname   $kernel on $machine
+${voffset -6}$color3$hr$font$color
+$color${font}Uptime:${goto 86}${uptime_short}${goto 165}CPU Fan:$alignr${execi 10 cat `~/.conky/sensors -l f71869`/fan1_input} RPM
+Awake:${goto 86}${execi 60 ~/.conky/awake}${goto 165}PWR Fan:$alignr${execi 10 cat `~/.conky/sensors -l f71869`/fan2_input} RPM
+${color3}${voffset 2}${cpugraph cpu1 30,150 222222 666666}${alignr}${cpugraph cpu2 30,150 222222 666666}
+${voffset -37}$color6${font sans:size=8} Core 1   $font   ${freq_g cpu1}GHz      ${offset 1}$color${hwmon 1 temp 2}˚C $color6${font sans:size=8}${goto 165} Core 2   $font$color6   ${freq_g cpu2}GHz$color$alignr${hwmon 1 temp 3}˚C 
+$color${font sans:size=8}${voffset 3}${goto 76}${cpu cpu1}%${goto 232}${cpu cpu2}%
+${color3}${voffset 2}${cpugraph cpu3 30,150 222222 666666}${alignr}${cpugraph cpu4 30,150 222222 666666} 
+${voffset -37}$color6${font sans:size=8} Core 3   $font   ${freq_g cpu1}GHz      ${offset 1}$color${hwmon 1 temp 4}˚C $color6${font sans:size=8}${goto 165} Core 4   $font$color6   ${freq_g cpu2}GHz$color$alignr${hwmon 1 temp 5}˚C 
+$color${font sans:size=8}${voffset 3}${goto 76}${cpu cpu3}%${goto 232}${cpu cpu4}%
+${voffset 6}${color}${font sans:bold:size=8}RAM$font ${goto 140} $memperc% ${alignr} $mem / $memmax
+${voffset -3}${color5}${membar 4}
+${color}${font sans:bold:size=8}Swap$font ${goto 140} $swapperc% ${alignr} $swap / $swapmax
+${voffset -3}${color5}${swapbar 4}
+#############
+# Processes #
+#############
+${color1}${voffset 6}${font sans:size=10:bold}Processes$font$color    $processes ( $running_processes running )${goto 210}I/O:$font$alignr${top_io name 1}
+${voffset -7}$color3$hr${voffset 2}
+${font sans:bold:size=8}${color}Top CPU  ${goto 120}   % ${goto 165}Top MEM $font${voffset 2}
+#${color}${top name 1} ${goto 115} ${top cpu 1} ${goto 165}${top_mem name 1} ${alignr}${top_mem mem_res 1}
+#${color eee}${top name 2} ${goto 115} ${top cpu 2} ${goto 165}${top_mem name 2} ${alignr}${top_mem mem_res 2}
+#${color ddd}${top name 3} ${goto 115} ${top cpu 3} ${goto 165}${top_mem name 3} ${alignr}${top_mem mem_res 3}
+#${color ccc}${top name 4} ${goto 115} ${top cpu 4} ${goto 165}${top_mem name 4} ${alignr}${top_mem mem_res 4}
+#${color bbb}${top name 5} ${goto 115} ${top cpu 5} ${goto 165}${top_mem name 5} ${alignr}${top_mem mem_res 5}
+${color}${top name 1} ${goto 115} ${top cpu 1}${execpi 10 sudo /usr/local/bin/smem -qgrkbHc "command tpss" -s tpss --cmd-width 16|head -5|awk '{print "${goto 165}"$1"${alignr}"$2}'}
+${voffset -52}${color eee}${top name 2} ${goto 115} ${top cpu 2}
+${color ddd}${top name 3} ${goto 115} ${top cpu 3}
+${color ccc}${top name 4} ${goto 115} ${top cpu 4}
+${color bbb}${top name 5} ${goto 115} ${top cpu 5}
+###########
+# Network #
+###########
+${if_existing /proc/net/route enp3s0}${voffset 10}${color1}${font sans:bold:size=10}Network ${font sans:size=8}$color${alignr}enp3s0     IP: ${texeci 8000 wget -O - checkip.dyndns.org|sed -e 's/.*Current IP Address: //' -e 's/<.*$//'} / ${addr enp3s0}
+${voffset -7}$color3$hr${voffset -4}
+${font}${alignr}${color3}${downspeedgraph enp3s0 25,85 222222 666666}  ${alignr}${color3}${upspeedgraph enp3s0 25,85 222222 666666}$color
+${voffset -34}Download : $alignr${totaldown enp3s0}${voffset 2}                                                               
+Upload     : $alignr${totalup enp3s0}                                                               
+${voffset -22}${goto 145}${font PizzaDude Bullets:size=10}r$font  ${downspeed enp3s0}/s${goto 236}${voffset -1}${font PizzaDude Bullets:size=10}v$font  ${upspeed enp3s0}/s
+${voffset 4}$endif
+${if_existing /proc/net/route wlx503eaaaacdaf}${color1}${font sans:bold:size=10}Network ${font sans:size=8}$color${alignr}wlx..     IP: ${texeci 8000 wget -O - checkip.dyndns.org|sed -e 's/.*Current IP Address: //' -e 's/<.*$//'} / ${addr wlx503eaaaacdaf}
+${voffset -7}$color3$hr${voffset -4}
+${font}${alignr}${color3}${downspeedgraph wlx503eaaaacdaf 25,85 222222 666666}  ${alignr}${color3}${upspeedgraph wlx503eaaaacdaf 25,85 222222 666666}$color
+${voffset -34}Download : $alignr${totaldown wlx503eaaaacdaf}${voffset 2}                                                               
+Upload     : $alignr${totalup wlx503eaaaacdaf}                                                               
+${voffset -22}${goto 145}${font PizzaDude Bullets:size=10}r$font  ${downspeed wlx503eaaaacdaf}/s${goto 236}${voffset -1}${font PizzaDude Bullets:size=10}v$font  ${upspeed wlx503eaaaacdaf}/s
+${voffset 4}$endif
+#${if_existing /proc/net/route eth1}${voffset 10}${color1}${font sans:bold:size=10}Network ${font sans:size=8}$color${alignr}eth1     IP: ${texeci 8000 wget -O - checkip.dyndns.org|sed -e 's/.*Current IP Address: //' -e 's/<.*$//'} /$
+#${voffset -7}$color3$hr${voffset -4}
+#${font}${alignr}${color3}${downspeedgraph eth1 25,85 222222 666666}  ${alignr}${color3}${upspeedgraph eth1 25,85 222222 666666}$color
+#${voffset -34}Download : $alignr${totaldown eth1}${voffset 2}
+#Upload      : $alignr${totalup eth1}
+#${voffset -22}${goto 145}${font PizzaDude Bullets:size=10}r$font  ${downspeed eth1}/s${goto 236}${voffset -1}${font PizzaDude Bullets:size=10}v$font  ${upspeed eth1}/s
+#${voffset 4}$endif
+###########
+# Storage #
+###########
+${color1}${font sans:size=10:bold}Storage$font$color${alignr}Mounted: ${execpi 5 ~/.conky/removable_drives}${voffset 2}
+##########
+# Users  #
+##########
+${color1}${font sanse:bold:size=10}Users$color$font${alignr}Users logged in: ${font sans:size=8:bold}${execi 6 users|tr " " "\n"|sort|uniq|wc -l} 
+${voffset -7}$color3$hr$font$color
+Sessions: ${execi 7 loginctl list-sessions |wc -l}${goto 150}${goto 130}${execpi 9 who|awk '{u++};/tty/{t++};END{print "tty: "t"  pts: "u-t}'}${goto 240}Remote: ${font sans:size=8:bold}${alignr}${execi 8 who --ips|grep '\..*\..*\..*$'|wc -l} 
+
+############
+# Graphics #
+############
+${color1}${font sans:size=10:bold}Graphics$color$font${execpi 6 ~/.conky/get_GFX}
+#Session type:$alignr${execi 360 echo $XDG_SESSION_TYPE}
+${execpi 12365 xdpyinfo | grep version:|sed 's/: /:${alignr}/'}
+
+#############
+#  Sound    #
+#############
+${color1}${font sans:size=10:bold}Sound$color$font${alignr}${execp painfo list-running-outputs-conky}
+${voffset -6}$color3$hr$color$font
+#Default Card:$alignr${exec painfo get-default-card}
+${execp painfo list-default-card-parameters-conky}
+Inputs:${execp painfo list-input-streams-conky}
+#${execpi 10 painfo list-cards-conky}
+
+#############
+#  Player   #
+#############
+#${if_running mocp}${color1}${font sans:size=10:bold}MOC Player$color$font$alignr${exec mocp -Q %ct} / ${exec mocp -Q %tt}${font sans:size=2}
+#$color3$hr
+#${voffset 3}$color$font${alignr}${execi 2 mocp -Q %song} - ${execi 2 mocp -Q %artist} - ${execi 2 mocp -Q %album}$endif
+#${if_running rhythmbox}${color1}${font sans:size=10:bold}Rhythmbox$color$font$alignr${exec rhythmbox-client --print-playing-format '%te / %td' --no-start}${font sans:size=2}
+#$color3$hr
+#$color$font${alignr}${execi 4 rhythmbox-client --print-playing --no-start}$endif
+#${exec /home/gdh/.conky/conkyCD}${image /dev/shm/conkyCover.png -p 0,760 -n}
+#${exec  n=`conkyRhythmbox --datatype=CA | sed -e 's/\\\//g'`; m=`cat /dev/shm/m`; if [ "$n" != "$m" ]; then if [ "$n" ]; then cp "$n" /dev/shm/album; else cp /home/gdh/Pictures/notes.jpg /dev/shm/album; fi; echo $n > /dev/shm/m; fi}
+#${image /dev/shm/album -p 5,853 -s 32x32}
+##############
+# Currencies #
+##############
+${color1}${font sans:size=10:bold}Currencies$color$font$alignr ČNB
+${voffset -7}$color3$hr
+$color$font${execpi 600 ~/.conky/currencies.py}
+#${font sans:size=8}$color                 ${color1}${font sans:size=10:bold}${goto 250}${voffset -3}GMail:$alignr ${execpi 60 ~/.conky/check_gmail.sh}
+]];
