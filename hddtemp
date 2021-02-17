@@ -1,0 +1,5 @@
+#!/bin/sh
+# vrací teplotu disku, pokud je dostupná hddtemp
+# parametrem je jméno disku v adresáři /dev/, tedy ve formátu sd[x]
+
+nc -d localhost 7634|sed -n "s/^.*$1[^|]*|[^|]*|\(..\)..[||\|$].*/\1°C/p"

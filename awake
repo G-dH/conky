@@ -1,0 +1,11 @@
+#!/bin/bash
+stfile=/tmp/suspendtime
+[ -e $stfile ] || echo "0">$stfile
+uptime=$(awk -v u=$(cut -d" " -f1 /proc/uptime) 'NR==1{printf "%.0f",(u-$1)/60}' $stfile)
+days=$(expr $uptime / 1440) # $uptime je v minutách, den má 1440 minut
+hours=$(expr $uptime % 1440 / 60) # % značí "modulo" - výsledkem je zbytek po dělení
+minutes=$(expr $uptime % 60)
+if [ "$days" -gt 0 ]; then echo "$days"d "$hours"h "$minutes"m
+elif [ "$hours" -gt 0 ]; then echo "$hours"h "$minutes"m
+else echo "$minutes"m
+fi

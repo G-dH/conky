@@ -1,0 +1,39 @@
+#!/bin/bash
+
+vi=`lshw -c video 2>/dev/null`
+product=`echo "$vi"|sed -n "s/product: *//p"`
+vendor=`echo "$vi"|sed -n "s/vendor: *//p"`
+driver=`echo "$vi"|sed -n "s/.*driver=\([^ ]*\).*/\1/p"`
+#driver=`lspci -v|egrep -A11 '[0] VGA'|grep 'driver in use:'|sed 's/.*: \([^ ]\+$\)/\1/'`
+session=`echo $XDG_SESSION_TYPE`
+
+case $driver in
+    "nouveau")
+        hwmon=$(grep -H "" /sys/class/hwmon/hwmon*/name |sed -n "/nouveau/s/.*\(hwmon[0-9]\).*/\1/p")
+        temp=$(cat $(~/.conky/sensors -l nouveau)/temp1_input)
+        #power="$(( ($(cat /sys/class/hwmon/$hwmon/power1_input)+500000)/1000000 )) W"
+        driver_version=""
+        vram=`glxinfo -B|grep "Video mem"|sed 's/.* //'`
+        fan="$(cat /sys/class/hwmon/$hwmon/fan1_input) rpm"
+        ;;
+    "nvidia")
+        temp=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits)
+        driver_version=" $(nvidia-smi -q -a|awk '/Driver Version/{print $4;exit}')"  # nvidia-settings -tq [gpu:0]/NvidiaDriverVersion # řádově pomalejší, než smi
+        vram="$(awk '{print $1/1024}'<<<$(nvidia-settings -tq [gpu:0]/VideoRam)) MB"
+        fan="$(nvidia-settings -tq [fan:0]/GPUCurrentFanSpeedRPM) rpm"
+        #clocks=$(nvidia-settings -q [gpu:0]/GPUCurrentClockFreqs -t | sed 's/\,/\//')
+        load=$(nvidia-settings -q GPUUtilization -t)
+        #refresh=$(nvidia-settings -q [gpu:0]/RefreshRate -t)
+        ;;
+esac
+
+echo "\${alignr}\${font sans:size=8:bold}${temp%%000}\$font°C / ${fan}"
+echo "\${voffset -6}\$color3\$hr\$font\$color"
+#[ "$driver" = "nouveau" ] && echo "Power:\${alignr}$power" 
+[ "$driver" = "nvidia" ] && echo "Load:\${alignr}$load"
+#echo "Vendor:\${alignr}$vendor"
+echo "Product:\${alignr}$product / $vram"
+#echo "VideoRAM:\${alignr}$vram"
+echo "Driver / Session:\${alignr}$driver$driver_version / $session"
+
+

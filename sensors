@@ -1,0 +1,16 @@
+#!/bin/bash
+# jako argument potřebuje řetězec obsahující jméno chipsetu, nebo část, jak je v souboru /sys/class/hwmon/hwmon*/name
+# vrací odpovídající hwmonX identifikátor
+# některé čipsety nemají data přímo v hwmon adresáři, ale v hwmon/device, proto volba -l pro vypsání celé cesty
+
+list="`grep -H '' /sys/class/hwmon/hwmon*/name`"
+list="$list\n`grep -H '' /sys/class/hwmon/hwmon*/device/name`"
+case "$1" in
+    "-l") echo -e "$list"| sed -n "/$2/s%/[^/]\+\$%%p"
+        ;;
+    "-a")  echo -e "$list"|sort
+        ;;
+    *   ) echo -e "$list"| sed -n "/$1/s/.*\(hwmon[0-9]\).*/\1/p"
+        ;;
+esac
+

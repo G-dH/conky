@@ -1,0 +1,44 @@
+#!/bin/bash
+
+make_conky()
+{
+    echo "$list" | while read line
+        do
+            mount=`awk '{$1="";print substr($0,2)}' <<<"$line"`
+            part=`awk '{print $1}' <<<"$line"`
+            name=`basename "$mount"`
+            name="${name:0:7}"
+            bpart=`basename "$part"`
+            bdev=`sed 's/[0-9]\+//'<<<"$bpart"`
+            if [ "$part" ]; then
+            echo "$col"'${fs_bar 14,309 '"$mount"'}
+${voffset -27}${diskiograph_read '"$part"' 14,309 000000 008800}
+${voffset -27}${diskiograph_write '"$part"' 14,309 000000 ff0000}${color}
+${goto 5}${voffset -21}$font' "$bpart  $name" '${goto 100}${fs_type '"$mount"'}${goto 160}${fs_size '"$mount"'}${goto 184}${goto 224}${fs_free '"$mount"'}${goto 287}${execi 50 ~/.conky/hddtemp ' \
+"$bdev" '}${voffset 1}'
+            fi
+        done
+}
+
+# total mounted capacity
+total=`mount |sed -n 's/\(^\/dev\/sd.*\) on \(.*\) type .*/\2/p'|xargs -I% df -BG "%"|awk '/^\/dev/{c+=$2};END{print c}'`
+totalT=`awk '{printf "%.2f",$1/1024}'<<<$total`
+if [ ${totalT%%.*} -lt 1 ]; then
+    echo $total GiB
+else echo $totalT TiB
+fi
+echo '${voffset -6}$color3$hr$font'
+
+# at first make root and home in red color
+listf=`mount |sed -n 's/\(^\/dev\/sd.*\) on \(.*\) type .*/\1 \2/p'|sort`
+list=`echo "$listf"|grep -E '/$|/home'`
+if [ "$list" ]; then col='${color 500}'; make_conky
+else echo '${voffset -13}' 
+fi
+
+# then rest of mounts in green
+list=`echo "$listf"|grep -Ev '/$|/home'`
+if [ "$list" ]; then col='${color 050}'; make_conky
+     echo '${voffset -5}'
+else echo '${voffset -3}'
+fi
