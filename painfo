@@ -1,0 +1,78 @@
+#!/bin/bash
+
+list_running_outputs() {
+    egrep -r "rate:" /proc/asound/card*/pcm*p | sed 's/.*\(card[0-9]\/pcm[0-9]p\).* \([0-9]\+\) (.*/\1\n\2/'|\
+        while read card; do
+            id=$(cat /proc/asound/$card/info | sed -n '/^name:/s/name: \(.*\)/\1/p');
+            format=$(awk '/^format/{print $2}' /proc/asound/$card/sub0/hw_params|sed 's/.*\([0-9]\{2\}\).*/\1/');
+            read freq; freq=$(echo "$freq/1000"|bc);
+            echo $id ${format}bit/${freq}kHz
+        done
+}
+
+list_running_outputs_conky() {
+    list_running_outputs | while read line; do [[ -z $l ]] && echo -n "Using: "; l=1; echo $line | sed 's/^/${alignr}/'; done
+}
+
+get_default_card_name() {
+    pacmd list-sinks | sed -n '/*/,/alsa.name/s/.*alsa.name.*"\([^"]\+\).*/\1/p'
+}
+
+list_default_card_parameters() {
+    pacmd list-sinks | sed -n '/*/,/sample spec:/p' |\
+        sed -n '/state:\|[^ ]volume:\|current latency:\|sample spec:/p' |\
+        sed 's/front.*\(...%\).*/\1/; s/^\W*//; s/^./\u&/'
+}
+
+list_default_card_parameters_conky() {
+    list_default_card_parameters |grep -v Sample | sed ':a;N;$!ba;s/\n/  /g;s/Current l/${alignr}L/;s/Volume/\${goto 120}Volume/'
+    #list_default_card_parameters |grep -v Sample| sed 's/: \| = /:${alignr}/'
+}
+
+list_cards() {
+    cat /proc/asound/cards
+}
+
+list_cards_conky() {
+    list_cards | sed -n '/[0-9]/s/\( [0-9]\).*: \(.*\)/Card \1:${alignr}\2/p'
+}
+
+list_input_streams() {
+    pacmd list-sink-inputs |\
+    sed -n 's/.*sink: \([0-9]\+\).*/\1/p; s/.*application.name = "\([^"]\+\)./\1/p'|\
+    while read index; do
+        name=$(pacmd list-sinks | sed -n "/index: $index/,/alsa.name/s/.*alsa.name = \"\([^\"]\+\).*/\1/p");
+        read app; echo "$app - $name";
+    done
+}
+
+list_input_streams_conky() {
+        list_input_streams | sed -n 's/^/${alignr}/p' | grep '^' || echo '${alignr}none'
+}
+
+print_help() {
+    exec 3>&1>&2
+    echo "Usage: painfo [Option]"
+    echo "Options:" 
+    echo -e "\t list-cards (lc)"
+    echo -e "\t list-input-streams (lis)"
+    echo -e "\t list-running-outputs (lro)"
+    echo -e "\t get-default-card (gdc)"
+    echo -e "\t list-default-card-parameters (ldcp)"
+    echo "For Conky formated output append '-conky' ('c') at the end of option string"
+    exec 1>&3-
+}
+
+case $1 in
+    list-running-outputs|lro)           list_running_outputs;;
+    get-default-card|gdc)               get_default_card_name;;
+    list-default-card-parameters|ldcp)      list_default_card_parameters;;
+    list-cards|lc)                  list_cards;;
+    list-input-streams|lis)             list_input_streams;;
+
+    list-running-outputs-conky|lroc)        list_running_outputs_conky;;
+    list-default-card-parameters-conky|ldcpc)   list_default_card_parameters_conky;;
+    list-cards-conky|lcc)               list_cards_conky;;
+    list-input-streams-conky|lisc)          list_input_streams_conky;;
+    *)                      print_help;;
+esac
