@@ -1,4 +1,4 @@
-*conky.lang* have to be placed at one of the folowing directories (at least in Ubuntu), depending on Gedit/Gnome version:
+*conky.lang* have to be placed in one of the following directories (at least in Ubuntu), depending on Gedit/Gnome version:
 The newest 3 versions:
  /usr/share/gtksourceview-4/language-specs/
  ~/.local/share/gtksourceview-4/language-specs/
