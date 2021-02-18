@@ -1,3 +1,4 @@
 # conky
-Conkyrc and my scripts for conky
-![Conky 1.10](https://1.bp.blogspot.com/-cBGXfhA4iqs/YCwuK0HxTWI/AAAAAAAAHhs/44UZpXQ6R68S-o4urwD4l_MtWKLx_vA-wCLcBGAsYHQ/s16000/conky-full.png)
+My conkyrc and scripts for conky
+
+![Conky 1.10](https://1.bp.blogspot.com/-6Ghq7pAYr3c/YC6GQdYD0SI/AAAAAAAAHh4/hVfeVYIY4V8o4RiTvFSlNnU9GW8MFf-QACLcBGAsYHQ/s16000/conky-full-s.png)
