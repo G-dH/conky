@@ -1,11 +1,11 @@
-*conky.lang* have to be placed in one of the following directories (at least in Ubuntu), depending on Gedit/Gnome version:
-The newest 3 versions:
+*conky.lang* have to be placed in one of the following directories (at least in Ubuntu), depending on used gtksourceview version:
+The newest 4 versions:
  /usr/share/gtksourceview-4/language-specs/
  ~/.local/share/gtksourceview-4/language-specs/
 Older 3 versions:
  /usr/share/gtksourceview-3.0/language-specs/
  ~/.local/share/gtksourceview-3.0/language-specs/
-Gnome 2:
+Ancient 2 versions:
  /usr/share/gtksourceview-2.0/language-specs/
  ~/.local/share/gtksourceview-2.0/language-specs/
 
